@@ -5,9 +5,8 @@ import tornado.httpserver
 import tornado.ioloop
 from tornado.options import parse_config_file, options, parse_command_line
 import logging
-from handler import routing
-import config
-import ui_methods
+from ecogame.handler import routing
+from ecogame import config, ui_methods
 
 
 logging.basicConfig(level=logging.INFO)
@@ -81,7 +80,6 @@ def main():
     app = Application()
     server_log = logging.getLogger(__name__)
     app.listen(int(options.port))
-    app.db_connect()
     tornado.ioloop.IOLoop.instance().set_blocking_signal_threshold(1, None)
 
 
