@@ -1,4 +1,4 @@
 eco-py
 ======
 
-Eco Game Python Version
+Eco Game Python 3.3+ Version

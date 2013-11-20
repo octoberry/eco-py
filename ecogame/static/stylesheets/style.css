@@ -1,0 +1,9 @@
+body {
+  padding: 50px;
+}
+
+#map_placeholder
+{
+	height: 500px;
+	width: 600px;
+}

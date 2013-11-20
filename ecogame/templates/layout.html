@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="window-1251">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>{% block title %}{% end %}</title>
+
+    <meta name="title" content="">
+    <meta name="description" content="">
+
+    <meta name="google-site-verification" content="">
+
+    <link rel="stylesheet" href="/static/stylesheets/gui_style.css">
+    <link href='http://fonts.googleapis.com/css?family=Luckiest+Guy|Bitter:700|Open+Sans:400,600,600italic'
+          rel='stylesheet' type='text/css'>
+
+</head>
+
+<body id="homepage">
+
+<!--Header Section-->
+<header>
+    <div class="container_16 clearfix">
+        <h1 class="grid_7" id="logo"></h1>
+    </div>
+    <!--//container-->
+</header>
+<!--//Header Section-->
+
+<section id="main">
+    {% block content %}{% end %}
+</section>
+
+<footer class="osans-s">
+    <div class="container_16 clearfix">
+    </div>
+</footer>
+
+
+</body>
+</html>
