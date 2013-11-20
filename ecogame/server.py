@@ -4,6 +4,7 @@ import tornado.web
 import tornado.httpserver
 import tornado.ioloop
 from tornado.options import parse_config_file, options, parse_command_line
+import motor
 import logging
 from ecogame.handler import routing
 from ecogame import config, ui_methods
@@ -31,6 +32,7 @@ class Application(tornado.web.Application):
     """
     def __init__(self, config_file=None, allow_console=True):
         self.server_log = logging.getLogger(__name__)
+        self.db = motor.MotorClient(connectTimeoutMS=1000, socketTimeoutMS=500).open_sync().test
 
         settings = build_app_config(config_file, allow_console)
         tornado.web.Application.__init__(self, routing.handlers, ui_methods=ui_methods, **settings)

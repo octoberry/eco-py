@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from tornado import web
 import logging
 import time
@@ -19,6 +18,10 @@ class CommonHandler(web.RequestHandler):
             self._logger = logging.getLogger(__name__)
             self._logger.setLevel(logging.INFO)
         return self._logger
+
+    @property
+    def db(self):
+        return self.application.db
 
     def render(self, template, **kwargs):
         super(CommonHandler, self).render(template, **kwargs)
