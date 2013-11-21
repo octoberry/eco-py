@@ -32,16 +32,22 @@ class Application(tornado.web.Application):
     """
     def __init__(self, config_file=None, allow_console=True):
         self.server_log = logging.getLogger(__name__)
-        self.db = motor.MotorClient(connectTimeoutMS=1000, socketTimeoutMS=500).open_sync().test
-
         settings = build_app_config(config_file, allow_console)
+
+        mongo = options.group_dict('mongo')
+        mongo_client = motor.MotorClient(host=mongo['mongo_host'],
+                                         port=mongo['mongo_port'],
+                                         connectTimeoutMS=mongo['mongo_timeout_connect'],
+                                         socketTimeoutMS=mongo['mongo_timeout_socket'])
+        self.db = getattr(mongo_client.open_sync(), mongo['mongo_db'])
+
         tornado.web.Application.__init__(self, routing.handlers, ui_methods=ui_methods, **settings)
         logging_configure()
 
 
 def build_app_config(config_file=None, allow_console=True):
     """
-    Собирает конфиг для hh-advdream-server
+    Собирает конфиг для eco-game-server
     """
     settings = {
         'template_path': os.path.join(os.path.dirname(__file__), "templates"),

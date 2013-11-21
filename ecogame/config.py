@@ -4,7 +4,11 @@ import collections
 
 
 #MONGO CONFIG
-#define("mongoconf", 'localhost', str, "MongoDB host", group='mongo')
+define("mongo_db", 'ecodev', str, "MongoDB DB name", group='mongo')
+define("mongo_host", 'localhost', str, "MongoDB host", group='mongo')
+define("mongo_port", 27017, int, "MongoDB port", group='mongo')
+define("mongo_timeout_connect", 10000, int, "MongoDB connection timeout", group='mongo')
+define("mongo_timeout_socket", 500, int, "MongoDB socket timeout", group='mongo')
 
 #COMMON APP SETTINGS
 define("config", type=str, help="path to config file")
