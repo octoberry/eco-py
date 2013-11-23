@@ -1,16 +1,24 @@
-from tornado import web
+from tornado import web, gen
 import logging
 import time
+from ecogame.model import ManagerLoader
 
 
 class CommonHandler(web.RequestHandler):
     def __init__(self, application, request, **kwargs):
         self.handler_started = time.time()
         self._logger = None
+        self._model_loader = None
         super(CommonHandler, self).__init__(application, request, **kwargs)
 
     def on_finish(self):
         self.logger.info('Handler request finished in %0.3f sec.', time.time() - self.handler_started)
+
+    @property
+    def model_loader(self):
+        if not self._model_loader:
+            self._model_loader = ManagerLoader(db=self.db)
+        return self._model_loader
 
     @property
     def logger(self):
@@ -33,9 +41,23 @@ class AuthCommonHandler(CommonHandler):
         super(AuthCommonHandler, self).__init__(application, request, **kwargs)
 
     def get_current_user(self):
-        return self.get_secure_cookie("user_id")
+        return "5290f3c37fd7e09bba28976b"
 
     def initialize(self):
+        pass
+
+    @gen.coroutine
+    def prepare(self):
+        if self.current_user:
+            self.logger.info('load user (id:%s)', self.current_user)
+            user = yield self.model_loader.user_manager.get(self.current_user)
+            if user:
+                self.user = user
+                self.logger.info('user id:%s found', self.current_user)
+            else:
+                self.clear_cookie("user")
+                self.logger.warning('loading current user (hh_id:%s) failed, not found', self.current_user)
+                raise web.HTTPError(500)
         pass
 
     def render(self, template, **kwargs):

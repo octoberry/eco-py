@@ -1,0 +1,171 @@
+<!doctype html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Окно в будущее</title>
+
+  <meta name="title" content="">
+  <meta name="description" content="">
+
+  <meta name="google-site-verification" content=""> <!-- http://google.com/webmasters -->
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+  <link rel="stylesheet" href="/static/stylesheets/gui_style.css">
+  <link rel="stylesheet" href="/static/stylesheets/style.css">
+  <link href='http://fonts.googleapis.com/css?family=Luckiest+Guy|Bitter:700|Open+Sans:400,600,600italic' rel='stylesheet' type='text/css'>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBh-UD-cFPHud5IzpKvRoHFrsOjW0zr93I&sensor=false">
+    </script>
+    <script type="text/javascript">
+
+    </script>
+
+</head>
+
+<body id="homepage">
+
+<section id="main">
+  <div class="container_16 clearfix">
+
+	<script>
+
+		var title = "" +
+		'<h2 class="luck grid_6" >Окно в будущее</h2><p class="grid_1" >Показывает: ';
+
+		var today = new Date();
+		var dd = today.getDate();
+		var mm = today.getMonth()+1; //January is 0!
+
+		var yyyy = today.getFullYear() + 50;
+		if(dd<10){dd='0'+dd} if(mm<10){mm='0'+mm} today = dd+'/'+mm+'/'+yyyy;
+
+		title += today + "</p>";
+		document.write( title );
+
+	  </script>
+
+	  <nav id="main_nav" class="bitter grid_9">
+        <ul>
+          <li><a href="#" id="all_quest_list">Доступные задания</a></li>
+          <li><a href="#" id="my_quest_list">Мои задания</a></li>
+        </ul>
+      </nav>
+
+<!--
+    <form enctype="multipart/form-data">
+    <input name="image" type="file" />
+    <input name="quest_id" type="hidden" value="3"/>
+    </form>
+    <progress></progress>
+-->
+
+    <div class="clear"></div><div class="big_sep"></div><div class="clear"></div>
+
+    <div class="grid_11 omega">
+      <article>
+        <div class="grid_9 alpha" >
+
+		<div id="map_placeholder">
+		</div>
+
+		</div>
+      </article>
+
+    <aside class="grid_4 alpha">
+
+      <div class="clear"></div>
+
+    </aside>
+
+      <div class="clear"></div>
+    </div><!--/grid_11 - articles-->
+
+    <aside class="grid_4 alpha">
+      <div id="search">
+        <h4 class="luck">Мой профиль</h4>
+      </div><!--search-->
+
+      <div class="clear"></div>
+
+		<div id="team" class="grid_16">
+		  <div class="row_1">
+			<div class="team_member">
+			  <img src='<%= user.photos[1].value %>'>
+			  <h6 class="luck"><%= user.displayName %></h6>
+			  </div>
+			</div>
+		  </div><!--row_1-->
+		<p> <img src="/img/crystal.png" width="20px" height="20px"/><span id="user_balance"><%= user.balance %></span></p>
+
+	    <div class="small_sep"></div>
+
+		<a href="#" id="crystal_boom" class="cta_btn2 luck">Бомбануть кристал<br/></a>
+
+    </aside>
+  </div><!--blogroll-->
+
+
+  </div><!--container_16-->
+
+</section>
+
+
+<script src="/static/js/quest.js"></script>
+<script src="/static/js/map.js"></script>
+
+<div id="all_quest_list-form" title="Доступные задания">
+<section  id="main">
+
+  <div class="container_16 clearfix">
+    <h2 class="luck grid_16">Доступные задания</h2>
+
+    <div class="clear"></div><div class="big_sep"></div><div class="clear"></div>
+
+    <div class="grid_11 omega" id="all_quest_item"></div>
+
+<!--
+      <a href="#" class="luck previous">&lt; Prev</a>
+      <a href="#" class="luck next">Next &gt;</a>
+-->
+
+  </div><!--container_16-->
+</section>
+</div>
+
+<div id="my_quest_list-form" title="Мои задания">
+<section  id="main">
+  <div class="container_16 clearfix">
+
+    <h2 class="luck grid_16">Мои задания</h2>
+
+    <div class="clear"></div><div class="big_sep"></div><div class="clear"></div>
+
+    <div class="grid_11 omega" id="my_quest_item"></div>
+
+<!--
+      <a href="#" class="luck previous">&lt; Prev</a>
+      <a href="#" class="luck next">Next &gt;</a>
+-->
+
+  </div><!--container_16-->
+</section>
+</div>
+
+<div id="all_quest_item-form" title="Задание">
+	 <div id="all_quest_item_descr"></div>
+</div>
+
+<div id="my_quest_item-form" title="Задание">
+	 <div id="my_quest_item_descr"></div>
+</div>
+
+
+</body>
+
+</html>
