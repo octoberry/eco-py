@@ -1,5 +1,5 @@
 <!doctype html>
-
+<html>
 <head>
 
   <meta charset="utf-8">
@@ -96,12 +96,12 @@
 		<div id="team" class="grid_16">
 		  <div class="row_1">
 			<div class="team_member">
-			  <img src='<%= user.photos[1].value %>'>
-			  <h6 class="luck"><%= user.displayName %></h6>
+			  <img src='{{ current_user.social["vk"]["photo_50"] }}'>
+			  <h6 class="luck">{{ current_user.name }}</h6>
 			  </div>
 			</div>
 		  </div><!--row_1-->
-		<p> <img src="/img/crystal.png" width="20px" height="20px"/><span id="user_balance"><%= user.balance %></span></p>
+		<p> <img src="/static/img/crystal.png" width="20px" height="20px"/><span id="user_balance">{{ current_user.balance }}</span></p>
 
 	    <div class="small_sep"></div>
 

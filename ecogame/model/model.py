@@ -32,13 +32,19 @@ class ModelObject(object):
     def db(self):
         return self.loader.db
 
+    def as_view(self) -> dict:
+        """
+        Возвращает dict описывающий объект без приватных свойств
+        """
+        return {'id': self.id}
+
     @property
     def object_db(self) -> MotorCollection:
         """Возвращает указатель на коллекцию в Mongo соответсвующую объекту"""
         return getattr(self.db, self.db_collection_name)
 
     def load_from_db(self, data: dict):
-        self.id = data['_id']
+        self.id = str(data['_id'])
         if 'cords' in data and data['cords']:
             self.cords = ModelCords(data['cords']['lat'], data['cords']['lng'])
 
@@ -75,6 +81,18 @@ class ModelManager(object):
             model_object.load_from_db(object_data)
 
         return model_object
+
+    @gen.coroutine
+    def find(self, query: dict=None) -> dict:
+        objects = []
+        cursor = self.object_db.find(query)
+        while (yield cursor.fetch_next):
+            obj_data = cursor.next_object()
+            model = self.model_type(self.loader)
+            model.load_from_db(obj_data)
+            objects.append(model)
+
+        return objects
 
 
 class ModelCords(object):
