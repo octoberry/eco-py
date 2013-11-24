@@ -42,7 +42,7 @@ class Application(tornado.web.Application):
                                          socketTimeoutMS=mongo['mongo_timeout_socket'])
         self.db = getattr(mongo_client.open_sync(), mongo['mongo_db'])
 
-        tornado.web.Application.__init__(self, routing.handlers, ui_methods=ui_methods, **settings)
+        tornado.web.Application.__init__(self, routing, ui_methods=ui_methods, **settings)
         logging_configure()
 
 

@@ -18,12 +18,15 @@ class Quest(ModelObject):
     """
     db_collection_name = 'quest'
 
+    view_fields = ['title', 'type', 'price', 'short_desc', 'desc']
+    """ Список публичных полей, возвращаемых методом as_view """
+
     def __init__(self, loader):
         super().__init__(loader)
-        self.title = None
+        self.title = ''
         self.type = 0
-        self.short_desc = None
-        self.desc = None
+        self.short_desc = ''
+        self.desc = ''
         self.price = 1
 
     def as_completed(self) -> dict:

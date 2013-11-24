@@ -48,6 +48,13 @@
 		title += today + "</p>";
 		document.write( title );
 
+        $( document ).ready(function() {
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-XSRFToken", '{{ xsrf }}');
+               }
+            });
+        });
 	  </script>
 
 	  <nav id="main_nav" class="bitter grid_9">

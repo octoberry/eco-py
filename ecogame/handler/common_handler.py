@@ -63,6 +63,7 @@ class AuthCommonHandler(CommonHandler):
     def render(self, template, **kwargs):
         # add any variables we want available to all templates
         kwargs['current_user'] = self.user
+        kwargs['xsrf'] = self.xsrf_token
         super(AuthCommonHandler, self).render(template, **kwargs)
 
 
