@@ -1,4 +1,6 @@
+import time
 from ecogame.model.model import ModelManager, ModelObject
+
 
 QuestTypes = {
     1: "Вторая жизнь вещей",
@@ -6,6 +8,7 @@ QuestTypes = {
     3: "Групповое задание",
     4: "Экономия электроэнергии"
 }
+
 
 class Quest(ModelObject):
     """
@@ -22,6 +25,18 @@ class Quest(ModelObject):
         self.short_desc = None
         self.desc = None
         self.price = 1
+
+    def as_completed(self) -> dict:
+        """
+        Возвращает объект выполненого квеста с указанием названия, цены и времени выполнения
+        """
+        return {
+            "id": self.id,
+            "title": self.title,
+            "type": self.type,
+            "price": self.price,
+            "finished_at": time.time()
+        }
 
 
 class QuestManager(ModelManager):

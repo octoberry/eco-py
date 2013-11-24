@@ -31,9 +31,7 @@ var quests = [{
 var user = {
     "_id" : "5290f3c37fd7e09bba28976b",
     "name": "Tom",
-    "balance": {
-        "crystal": 0
-    },
+    "balance": 0,
     "social": {
         "vk": {
             "id": 205387401,

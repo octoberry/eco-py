@@ -13,6 +13,21 @@ class ModelObject(object):
         self.id = None
         self.loader = loader
 
+    def _id_selector(self) -> dict:
+        """
+        Возвращает dict - селектор текущего объекта по ID
+        """
+        if not self.id:
+            raise KeyError('Object Id is empty')
+        return {'_id', ObjectId(self.id)}
+
+    @gen.coroutine
+    def _update_record(self, value: dict):
+        """
+        Выполняет find_and_modify запрос к записи по ее _id
+        """
+        yield Op(self.object_db.find_and_modify, self._id_selector(), value)
+
     @property
     def db(self):
         return self.loader.db
