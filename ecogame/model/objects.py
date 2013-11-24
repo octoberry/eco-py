@@ -1,5 +1,11 @@
 from ecogame.model.model import ModelManager, ModelObject
 
+QuestTypes = {
+    1: "Вторая жизнь вещей",
+    2: "Раздельный сбор",
+    3: "Групповое задание",
+    4: "Экономия электроэнергии"
+}
 
 class Quest(ModelObject):
     """
@@ -11,8 +17,11 @@ class Quest(ModelObject):
 
     def __init__(self, loader):
         super().__init__(loader)
-        self.description = None
-        self.reward = 1
+        self.title = None
+        self.type = 0
+        self.short_desc = None
+        self.desc = None
+        self.price = 1
 
 
 class QuestManager(ModelManager):
