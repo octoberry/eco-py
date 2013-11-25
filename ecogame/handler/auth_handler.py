@@ -19,7 +19,7 @@ class VKAuthHandler(CommonHandler, VKHandlerMixin):
                 if not user:
                     user = self.model_loader.user_manager.new_object()
                     fill_user_from_vk(user, users[0])
-                    yield self.model_loader.user_manager.save(user)
+                    yield self.model_loader.user_manager.register(user)
                 self.set_secure_cookie('user', str(user.id))
                 self.redirect('/game')
         else:

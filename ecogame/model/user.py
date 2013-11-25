@@ -16,7 +16,7 @@ class User(ModelObject):
         self.social = {}
         self.quests_ids = []
         self.quests_competed = []
-        self.balance = 0
+        self.balance = 2
 
     @gen.coroutine
     def accept_quest(self, quest: Quest):
@@ -75,6 +75,12 @@ class UserManager(ModelManager):
         query = {social_key: social_id}
         user = yield self.find_one(query)
         return user
+
+    @gen.coroutine
+    def register(self, user: User):
+        """Регистрирует пользователя"""
+        #todo: генерить зомбаков после создания
+        yield self.save(user)
 
 
 def fill_user_from_vk(user: User, vk_data: dict):
