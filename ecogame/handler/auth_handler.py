@@ -106,41 +106,27 @@ class VKMixin(OAuth2Mixin):
 class VKAuthHandler(AuthCommonHandler, VKMixin):
     @gen.coroutine
     def get(self):
-        def some(data):
-            print(data)
-
+        redirect_url = 'http://127.0.0.1:8001/auth/vkontakte'
         if self.get_argument("code", False):
-            #hh_user = yield self.get_authenticated_user(
-            #    client_id=self.settings["hh_api_key"],
-            #    client_secret=self.settings["hh_secret"],
-            #    code=self.get_argument("code"))
-
-
-            token = yield self.vk_api.get_access_token(self.get_argument("code"))
-
-            print(token)
-            print(token)
-            print(token)
-            print(token)
-            user = yield self.vk_api.get_user(access_token=token['access_token'])
+            token = yield self.vk_api.get_access_token(self.get_argument("code"), redirect_url=redirect_url)
+            user = yield self.vk_api.get_users(access_token=token['access_token'])
             print(user)
             print(user)
             print(user)
             print(user)
 
-            #if not hh_user:
-            #    self.logger.warning('Empty HeadHunter auth response')
-            #    self.redirect('/employer')
-            #elif not hh_user['is_employer']:
-            #    self.logger.info('Reject access, user (hh_id:%s) is not employer', hh_user['id'])
-            #    self.redirect('/employer')
+            if not user:
+                self.logger.warning('Empty VK auth response')
+                self.redirect('/')
+
             #else:
             #    yield self.user_manager.sync_user(hh_user)
             #    self.set_secure_cookie('user_id', hh_user['id'])
             #    self.redirect('/dashboard')
         else:
             #todo: remove redirect_uri arg
+
             yield self.authorize_redirect(
-                redirect_uri='http://127.0.0.1:8001/auth/vkontakte',
+                redirect_uri=redirect_url,
                 client_id=self.vk_api.client_id,
-                extra_params={'response_type': 'code'})
+                extra_params={'scope': 'friends', 'response_type': 'code'})
