@@ -39,3 +39,10 @@ var user = {
         }
     }
 };
+
+var zombies = [{
+    name: "Леонид Агутин",
+    users: [ObjectId("5290f3c37fd7e09bba28976b"), ObjectId("ololo")],
+    social: {},
+    cords: {lng: 37.652071, lat: 55.746463}
+}];

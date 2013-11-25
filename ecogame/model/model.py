@@ -55,8 +55,6 @@ class ModelObject(object):
         for field, value in data.items():
             if field != 'cords' and hasattr(self, field):
                 setattr(self, field, value)
-        if 'cords' in data and data['cords']:
-            self.cords = ModelCords(data['cords']['lat'], data['cords']['lng'])
 
 
 class ModelList(list):
@@ -113,8 +111,12 @@ class ModelManager(object):
         return objects
 
 
-class ModelCords(object):
-    """todo: изменить на миксин с операциями апдейта координат"""
-    def __init__(self, lat=None, lng=None):
-        self.lat = lat
-        self.lng = lng
+class ModelCordsMixin(object):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cords = None
+
+    def load_from_db(self, data: dict):
+        super().load_from_db(data)
+        if 'cords' in data and data['cords']:
+            self.cords = dict(lat=data['cords']['lat'], lng=data['cords']['lng'])

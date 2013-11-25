@@ -5,7 +5,7 @@ $( document ).ready(function() {
     $('#crystal_boom').on('click', function() {
         if (!mapClickMode) {
             mapClickMode = 'crystal';
-            map.setOptions({draggableCursor:'url(img/crystal.png) 32 35, default'});
+            map.setOptions({draggableCursor:'url(/static/img/crystal.png) 32 35, default'});
         }
     });
 });
@@ -36,7 +36,7 @@ $( document ).ready(function() {
             pollutions[val._id] = new google.maps.Marker({
                 position: new google.maps.LatLng(val.cords.y, val.cords.x),
                 map: map,
-                icon: 'resources/rubbish_small.png'
+                icon: '/static/resources/rubbish_small.png'
             });
           });
         });
@@ -44,9 +44,9 @@ $( document ).ready(function() {
         $.getJSON("/zombies", function( data ) {
           $.each( data, function( key, val ) {
             var currentZombie = new google.maps.Marker({
-                position: new google.maps.LatLng(val.cords.y, val.cords.x),
+                position: new google.maps.LatLng(val.cords.lat, val.cords.lng),
                 map: map,
-                icon: 'resources/zombie_small.png',
+                icon: '/static/resources/zombie_small.png',
                 title: val.first_name + " " + val.last_name
             });
             currentZombie.xspeed = (Math.random() - 0.5) / 5000;
@@ -64,7 +64,7 @@ $( document ).ready(function() {
                   var ecobot = new google.maps.Marker({
                       position: new google.maps.LatLng(val_robot.cords.lat, val_robot.cords.lng),
                       map: map,
-                      icon: 'resources/ecobot_small.png',
+                      icon: '/static/resources/ecobot_small.png',
                       title: 'EcoRobot'
                   });
                   ecobot.xspeed = 0;//(Math.random() - 0.5) / 5000;
@@ -80,7 +80,7 @@ $( document ).ready(function() {
 
                   google.maps.event.addListener(ecobot, 'click', function() {
                       if (!mapClickMode) {
-                          ecobot.setIcon('resources/ecobot_small_selected.png');
+                          ecobot.setIcon('/static/resources/ecobot_small_selected.png');
                           selectedEcobot = ecobot;
 
                           map.setOptions({draggableCursor: 'crosshair'});
@@ -95,7 +95,7 @@ $( document ).ready(function() {
         	if (mapClickMode == 'robot' && selectedEcobot){
 
                 var updateRobotPosition = function() {
-                    selectedEcobot.setIcon('resources/ecobot_small.png');
+                    selectedEcobot.setIcon('/static/resources/ecobot_small.png');
                     //selectedEcobot.setPosition(event.latLng);
 
                     var x = (selectedEcobot.getPosition().lat() - event.latLng.lat());

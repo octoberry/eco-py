@@ -1,5 +1,5 @@
 from tornado import gen
-from ecogame.model.model import ModelManager, ModelObject
+from ecogame.model.model import ModelManager, ModelObject, ModelList
 from ecogame.model.objects import Quest
 
 
@@ -24,7 +24,7 @@ class User(ModelObject):
         self.quests_ids.append(quest.id)
 
     @gen.coroutine
-    def quests(self) -> dict:
+    def quests(self) -> ModelList:
         """Возвращает список принятых квестов"""
         quests = yield self.loader.quest_manager.find({'_id': {'$in': self.quests_ids}})
         return quests
@@ -55,8 +55,11 @@ class User(ModelObject):
         yield self._update_record({'$inc': {"balance": int(inc)}})
         self.balance += inc
 
-    def load_from_db(self, data: dict):
-        super().load_from_db(data)
+    @gen.coroutine
+    def zombies(self) -> ModelList:
+        """Возвращает зомби видимых пользователю"""
+        zombies = yield self.loader.zombie_manager.find({'users': self.id})
+        return zombies
 
 
 class UserManager(ModelManager):

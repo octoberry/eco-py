@@ -7,3 +7,12 @@ class GameDashboardHandler(AuthCommonHandler):
     @web.authenticated
     def get(self):
         self.render('game.html')
+
+
+class ZombiesHandler(AuthCommonHandler):
+    @web.authenticated
+    @gen.coroutine
+    def get(self):
+        """Возвращает зомби доступных пользователю"""
+        zombies = yield self.user.zombies()
+        self.send_json(zombies)

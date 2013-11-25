@@ -10,6 +10,7 @@ routing = [
     (r'/quest/([a-z0-9]+)/complete', QuestCompleteHandler),
     (r'/quests/my', QuestMyHandler),
     (r'/quests', QuestsHandler),
+    (r'/zombies', ZombiesHandler),
     (r'/status', StatusHandler),
     (r'/', LandingPageHandler),
 ]

@@ -1,5 +1,5 @@
 import time
-from ecogame.model.model import ModelManager, ModelObject
+from ecogame.model.model import ModelManager, ModelObject, ModelCordsMixin
 
 
 QuestTypes = {
@@ -19,7 +19,6 @@ class Quest(ModelObject):
     db_collection_name = 'quest'
 
     view_fields = ['title', 'type', 'price', 'short_desc', 'desc']
-    """ Список публичных полей, возвращаемых методом as_view """
 
     def __init__(self, loader):
         super().__init__(loader)
@@ -63,20 +62,22 @@ class PollutionManager(ModelManager):
     model_type = Pollution
 
 
-class Zombie(ModelObject):
+class Zombie(ModelCordsMixin, ModelObject):
     """
     Создаются на базе друзей пользователя из социальных сетей.
 
-    Виден только пользователям, у которых находится в соц. сетях.
+    Видны только пользователям, у которых находится в друзьях соц. сетей.
+    todo: change mixin inherit to right direction
     """
 
     db_collection_name = 'zombie'
+
+    view_fields = ['name', 'cords']
 
     def __init__(self, loader):
         super().__init__(loader)
         self.users = []
         self.name = None
-        self.cords = None
         self.social = None
 
 
