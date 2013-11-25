@@ -6,8 +6,10 @@ from ecogame.handler.quest_handler import *
 routing = [
     (r'/favicon.ico', StaticFileHandler),
     (r'/game', GameDashboardHandler),
-    (r'/quests', QuestsHandler),
     (r'/quest/([a-z0-9]+)/accept', QuestAcceptHandler),
+    (r'/quest/([a-z0-9]+)/complete', QuestCompleteHandler),
+    (r'/quests/my', QuestMyHandler),
+    (r'/quests', QuestsHandler),
     (r'/status', StatusHandler),
     (r'/', LandingPageHandler),
 ]

@@ -1,4 +1,3 @@
-from tornado.escape import json_encode
 from tornado import web, gen
 from tornado.web import HTTPError
 from ecogame.handler.common_handler import AuthCommonHandler
@@ -9,9 +8,7 @@ class QuestsHandler(AuthCommonHandler):
     @gen.coroutine
     def get(self):
         quests = yield self.model_loader.quest_manager.find()
-        json_q = [quest.as_view() for quest in quests]
-        self.write(json_encode(json_q))
-        self.finish()
+        self.send_json(quests)
 
 
 class QuestAcceptHandler(AuthCommonHandler):
@@ -23,5 +20,25 @@ class QuestAcceptHandler(AuthCommonHandler):
         if not quest:
             raise HTTPError(404)
         yield self.user.accept_quest(quest)
-        self.write(json_encode({'status': True, 'id': str(quest.id)}))
-        self.finish()
+        self.send_json({'status': True, 'id': str(quest.id)})
+
+
+class QuestCompleteHandler(AuthCommonHandler):
+    @web.authenticated
+    @gen.coroutine
+    def post(self, quest_id):
+        """Помечает квест как готовый"""
+        quest = yield self.model_loader.quest_manager.get(quest_id)
+        if not quest:
+            raise HTTPError(404)
+        yield self.user.compete_quest(quest)
+        self.send_json({'status': True, 'id': str(quest.id)})
+
+
+class QuestMyHandler(AuthCommonHandler):
+    @web.authenticated
+    @gen.coroutine
+    def get(self):
+        """Обрабатывает accept квеста пользователем в работу"""
+        quests = yield self.user.quests()
+        self.send_json(quests)

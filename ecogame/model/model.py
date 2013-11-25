@@ -8,10 +8,10 @@ class ModelObject(object):
     """Базовый класс объекта"""
 
     db_collection_name = 'objects'
-    """ Имя коллекции объектов в MongoDB """
+    """Имя коллекции объектов в MongoDB"""
 
     view_fields = []
-    """ Список публичных полей, возвращаемых методом as_view """
+    """Список публичных полей, возвращаемых методом as_view"""
 
     def __init__(self, loader):
         self.id = None
@@ -26,14 +26,14 @@ class ModelObject(object):
     @gen.coroutine
     def _update_record(self, value: dict):
         """Выполняет find_and_modify запрос к записи по ее _id"""
-        yield Op(self.object_db.find_and_modify, self._id_selector(), value)
+        yield Op(self.object_db.update, self._id_selector(), value)
 
     @property
     def db(self):
         return self.loader.db
 
     def as_view(self) -> dict:
-        """Возвращает dict описывающий объект без приватных свойств"""
+        """Возвращает dict-представление модели, с разрашенными в view_fields свойствами"""
         result = {'id': str(self.id)}
         result.update({field: getattr(self, field) for field in self.view_fields})
         return result
@@ -57,6 +57,13 @@ class ModelObject(object):
                 setattr(self, field, value)
         if 'cords' in data and data['cords']:
             self.cords = ModelCords(data['cords']['lat'], data['cords']['lng'])
+
+
+class ModelList(list):
+    """Класс-обертка для списков, реализующий доп. методы"""
+    def as_view(self) -> dict:
+        """Возвращает список as_view представлений моделей"""
+        return [obj.as_view() for obj in self]
 
 
 class ModelManager(object):
@@ -94,8 +101,8 @@ class ModelManager(object):
         return model_object
 
     @gen.coroutine
-    def find(self, query: dict=None) -> dict:
-        objects = []
+    def find(self, query: dict=None) -> ModelList:
+        objects = ModelList()
         cursor = self.object_db.find(query)
         while (yield cursor.fetch_next):
             obj_data = cursor.next_object()

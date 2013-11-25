@@ -1,6 +1,7 @@
 from tornado import web, gen
 import logging
 import time
+from tornado.escape import json_encode
 from ecogame.model import ManagerLoader
 
 
@@ -15,7 +16,7 @@ class CommonHandler(web.RequestHandler):
         self.logger.info('Handler request finished in %0.3f sec.', time.time() - self.handler_started)
 
     @property
-    def model_loader(self):
+    def model_loader(self) -> ManagerLoader:
         if not self._model_loader:
             self._model_loader = ManagerLoader(db=self.db)
         return self._model_loader
@@ -33,6 +34,14 @@ class CommonHandler(web.RequestHandler):
 
     def render(self, template, **kwargs):
         super(CommonHandler, self).render(template, **kwargs)
+
+    def send_json(self, data):
+        """Отправляет dict как json. Автоматически вызывает as_view"""
+        if hasattr(data, 'as_view'):
+            self.write(json_encode(data.as_view()))
+        else:
+            self.write(json_encode(data))
+        self.finish()
 
 
 class AuthCommonHandler(CommonHandler):

@@ -21,12 +21,9 @@ function quest_accept_click(key) {
 
 function photo_upload_click(key) {
     var val = global_quest_list.data[key];
-    console.log('photo_upload_click', key);
-    console.log('photo_upload_click', val);
     $.ajax({
         type: "POST",
-        url: "/quest/photo/upload",
-        data: JSON.stringify({ 'quest_id': val._id }),
+        url: "/quest/" + val.id + "/complete",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
@@ -153,7 +150,7 @@ $(function () {
 
 
     $("#my_quest_list").click(function () {
-        $.getJSON("/my_quests", function (data) {
+        $.getJSON("/quests/my", function (data) {
             global_quest_list.data = data;
             $("#my_quest_item").text("");
             $.each(data, function (key, val) {
