@@ -431,7 +431,7 @@ article ul li a:hover { opacity: 0.9;-ms-filter: "progid:DXImageTransform.Micros
 #main .about_text p { margin-top: 10px; }
 
 #team .team_member { float: left; width: 200px; margin-left: 80px; text-align: center; margin-top: 35px;}
-#team img { background: url('images/team_photos_bg.png') no-repeat; height: 200px; padding: 11px; width: 200px;}
+#team img { background: url('images/team_photos_bg.png') no-repeat; padding: 11px; width: 200px;}
 #team .row_1 .team_member:first-child,
 #team .row_2 .team_member:first-child,
 #team .row_3 .team_member:first-child { margin-left: 50px;}

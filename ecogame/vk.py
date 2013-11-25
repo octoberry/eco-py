@@ -15,7 +15,7 @@ class VKAPI(object):
     _OAUTH_REQUEST_URL = "https://api.vk.com/method/"
     _API_VERSION = '5.4'
 
-    default_user_fields = 'sex,bdate,city,country,photo_50,photo_200_orig,verified'
+    default_user_fields = 'sex,bdate,city,country,photo_50,photo_200_orig'
 
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
@@ -32,7 +32,7 @@ class VKAPI(object):
         return escape.json_decode(response.body)
 
     @gen.coroutine
-    def get_users(self, access_token, user_ids=None, params=None):
+    def get_users(self, access_token, user_ids=None, fields=None, params=None):
         """
         Получает данные пользователя
 
@@ -40,13 +40,25 @@ class VKAPI(object):
 
         Возвращает массив найденных пользователей
         """
-        args = {'fields': self.default_user_fields}
+        args = {'fields': fields or self.default_user_fields}
         if user_ids:
             args = {"uid": user_ids}
         if params:
             args.update(params)
         user = yield self.request(api_method="users.get", access_token=access_token, params=args)
         return user
+
+    def authorize_redirect_url(self, client_id=None, scope='', redirect_uri=None):
+        """Создает URL запроса авторизации vk.com"""
+        args = {
+            "response_type": "code",
+            "v": self._API_VERSION,
+            "redirect_uri": redirect_uri,
+            "client_id": client_id
+        }
+        if scope:
+            args['scope'] = scope
+        return url_concat(self._OAUTH_AUTHORIZE_URL, args)
 
     def _oauth_request_token_url(self, redirect_uri=None, client_id=None,
                                  client_secret=None, code=None,
@@ -82,3 +94,10 @@ class VKAPI(object):
         if 'response' not in response_body:
             raise RuntimeError('Response should contain response field')
         return response_body['response']
+
+
+class VKHandlerMixin(object):
+    """Реализует метод запроса авторизации"""
+    def authorize_redirect(self, client_id=None, redirect_uri=None, scope=''):
+        url = self.vk_api.authorize_redirect_url(client_id=client_id, redirect_uri=redirect_uri, scope=scope)
+        self.redirect(url)

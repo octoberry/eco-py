@@ -1,3 +1,4 @@
+from motor import Op
 from tornado import gen
 from ecogame.model.model import ModelManager, ModelObject, ModelList
 from ecogame.model.objects import Quest
@@ -9,8 +10,10 @@ class User(ModelObject):
     def __init__(self, loader):
         super().__init__(loader)
         self.name = None
+        self.avatar = None
+        self.photo = None
         self.cords = None
-        self.social = None
+        self.social = {}
         self.quests_ids = []
         self.quests_competed = []
         self.balance = 0
@@ -65,3 +68,18 @@ class User(ModelObject):
 class UserManager(ModelManager):
     model_type = User
 
+    @gen.coroutine
+    def find_by_social(self, social: str, social_id: str):
+        """Осуществляет поиск пользователя по его ID в социальной сети"""
+        social_key = 'social.%s.id' % social
+        query = {social_key: social_id}
+        user = yield self.find_one(query)
+        return user
+
+
+def fill_user_from_vk(user: User, vk_data: dict):
+    """Создает пользователя из данных vk.com"""
+    user.social['vk'] = vk_data
+    user.avatar = vk_data['photo_50']
+    user.photo = vk_data['photo_200_orig']
+    user.name = vk_data['first_name']

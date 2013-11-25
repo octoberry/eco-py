@@ -56,6 +56,22 @@ class ModelObject(object):
             if field != 'cords' and hasattr(self, field):
                 setattr(self, field, value)
 
+    def as_db_dict(self) -> dict:
+        """
+        Возвращает dict для сохранения в базе данных
+
+        По умолчанию возвращает все свойства объекта типа: dict, list, str, int, float, bool
+
+        Может быть переопреден в конкретных реализациях
+        """
+        allowed_types = (dict, list, str, int, float, bool)
+        result = {key: value for key, value in vars(self).items() if isinstance(value, allowed_types)}
+        if 'id' in result:
+            if result['id']:
+                result['_id'] = result['id']
+            result.pop("id", None)
+        return result
+
 
 class ModelList(list):
     """Класс-обертка для списков, реализующий доп. методы"""
@@ -93,22 +109,49 @@ class ModelManager(object):
 
         model_object = None
         if object_data:
-            model_object = self.model_type(self.loader)
+            model_object = self.new_object()
             model_object.load_from_db(object_data)
 
         return model_object
 
+    def new_object(self) -> ModelObject:
+        """Создает пустой экземпляр модели"""
+        model_object = self.model_type(self.loader)
+        return model_object
+
+    @gen.coroutine
+    def save(self, model: ModelObject):
+        """
+        Создает или обновляет целиком модель в базе.
+
+        ! Не рекомендуется к использованию для обновления объектов
+        """
+        model_data = model.as_db_dict()
+        oid = yield Op(self.object_db.save, model_data)
+        model.id = ObjectId(oid)
+
     @gen.coroutine
     def find(self, query: dict=None) -> ModelList:
+        """Осуществляет поиск моделей в коллекции удовлетворяющих условию query"""
         objects = ModelList()
         cursor = self.object_db.find(query)
         while (yield cursor.fetch_next):
             obj_data = cursor.next_object()
-            model = self.model_type(self.loader)
+            model = self.new_object()
             model.load_from_db(obj_data)
             objects.append(model)
 
         return objects
+
+    @gen.coroutine
+    def find_one(self, query: dict=None) -> ModelObject:
+        """Осуществляет поиск одной модели в коллекции удовлетворяющих условию query"""
+        model = None
+        object_data = yield Op(self.object_db.find_one, query)
+        if object_data:
+            model = self.new_object()
+            model.load_from_db(object_data)
+        return model
 
 
 class ModelCordsMixin(object):
