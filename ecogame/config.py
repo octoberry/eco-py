@@ -22,3 +22,7 @@ define('suppressed_loggers', ['tornado.curl_httpclient'], list)
 define('logformat', '[%(process)s] %(asctime)s %(levelname)s %(name)s: %(message)s', str)
 define('logfile', None, str, 'Path to log file')
 define('disable_console_log', False, bool, 'Disable console log (if any other log handler available)')
+
+#VK.COM
+define('vk_client_id', None, str, 'vk client id', group='application')
+define('vk_client_secret', None, str, 'vk client secret', group='application')

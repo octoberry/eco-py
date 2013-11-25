@@ -1,6 +1,5 @@
-from tornado import gen
 from tornado.escape import json_encode
-from ecogame.handler.common_handler import CommonHandler, AuthCommonHandler
+from ecogame.handler.common_handler import CommonHandler
 from ecogame.version import version
 
 
