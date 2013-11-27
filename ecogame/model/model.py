@@ -14,6 +14,12 @@ class ModelObject(object):
     """Список публичных полей, возвращаемых методом as_view"""
 
     def __init__(self, loader):
+        """
+        Создает объект модели
+
+        :param loader: загрузчик объектов
+        :type loader: ecogame.model.ManagerLoader
+        """
         self.id = None
         self.loader = loader
 
@@ -85,6 +91,14 @@ class ModelManager(object):
     model_type = ModelObject
 
     def __init__(self, db: MotorDatabase, loader):
+        """
+        Менеджер модели, преднозначен для поиска моделей и групповых операций
+
+        :param db: mongo db
+        :type db: MotorDatabase
+        :param loader: загрузчик объектов
+        :type loader: ecogame.model.ManagerLoader
+        """
         self.db = db
         self.loader = loader
 
