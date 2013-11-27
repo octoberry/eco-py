@@ -3,7 +3,6 @@ from ecogame.model import ManagerLoader
 from tornado import web, gen
 import logging
 import time
-from ecogame.vk import VKAPI
 
 
 class CommonHandler(web.RequestHandler):
@@ -12,9 +11,8 @@ class CommonHandler(web.RequestHandler):
         super(CommonHandler, self).__init__(application, request, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        self.vk_api = VKAPI(client_id=self.settings["vk_client_id"], client_secret=self.settings["vk_client_secret"])
         self.db = self.application.db
-        self.model_loader = ManagerLoader(db=self.db)
+        self.loader = ManagerLoader(self.settings, db=self.db)
 
     def on_finish(self):
         self.logger.info('Handler request finished in %0.3f sec.', time.time() - self.handler_started)
@@ -43,7 +41,7 @@ class AuthCommonHandler(CommonHandler):
     def prepare(self):
         if self.current_user:
             self.logger.info('load user id:%s', self.current_user)
-            user = yield self.model_loader.user_manager.get(self.current_user)
+            user = yield self.loader.user_manager.get(self.current_user)
             if user:
                 self.user = user
                 self.logger.info('user id:%s found', self.current_user)

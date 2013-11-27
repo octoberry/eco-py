@@ -7,7 +7,7 @@ class QuestsHandler(AuthCommonHandler):
     @web.authenticated
     @gen.coroutine
     def get(self):
-        quests = yield self.model_loader.quest_manager.find()
+        quests = yield self.loader.quest_manager.find()
         self.send_json(quests)
 
 
@@ -16,7 +16,7 @@ class QuestAcceptHandler(AuthCommonHandler):
     @gen.coroutine
     def post(self, quest_id):
         """Обрабатывает accept квеста пользователем в работу"""
-        quest = yield self.model_loader.quest_manager.get(quest_id)
+        quest = yield self.loader.quest_manager.get(quest_id)
         if not quest:
             raise HTTPError(404)
         yield self.user.accept_quest(quest)
@@ -28,7 +28,7 @@ class QuestCompleteHandler(AuthCommonHandler):
     @gen.coroutine
     def post(self, quest_id):
         """Помечает квест как готовый"""
-        quest = yield self.model_loader.quest_manager.get(quest_id)
+        quest = yield self.loader.quest_manager.get(quest_id)
         if not quest:
             raise HTTPError(404)
         yield self.user.compete_quest(quest)

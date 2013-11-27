@@ -1,4 +1,3 @@
-from tornado.escape import json_encode
 from ecogame.handler.common_handler import CommonHandler
 from ecogame.version import version
 
@@ -16,5 +15,4 @@ class StatusHandler(CommonHandler):
         """
         Возвращает версию текующего приложения в JSON
         """
-        self.write(json_encode({'version': version}))
-        self.finish()
+        self.send_json({'version': version})

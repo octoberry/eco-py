@@ -1,17 +1,28 @@
 from ecogame.model.objects import QuestManager, ZombieManager
 from ecogame.model.user import UserManager
 from motor import MotorDatabase
+from ecogame.vk import VKAPI
 
 
 class ManagerLoader(object):
     """
     Загрузчик менеджеров, используется в хэндлерах и моделях
     """
-    def __init__(self, db: MotorDatabase):
+    def __init__(self, settings: dict, db: MotorDatabase):
         self.db = db
+        self.settings = settings
         self._user_manager = None
+        self._vk_api = None
         self._quest_manager = None
         self._zombie_manager = None
+
+    @property
+    def vk(self) -> VKAPI:
+        """vk.com API"""
+        if not self._vk_api:
+            self._vk_api = self._vk_api = VKAPI(client_id=self.settings["vk_client_id"],
+                                                client_secret=self.settings["vk_client_secret"])
+        return self._vk_api
 
     @property
     def user_manager(self) -> UserManager:

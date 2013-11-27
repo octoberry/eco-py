@@ -99,5 +99,5 @@ class VKAPI(object):
 class VKHandlerMixin(object):
     """Реализует метод запроса авторизации"""
     def authorize_redirect(self, client_id=None, redirect_uri=None, scope=''):
-        url = self.vk_api.authorize_redirect_url(client_id=client_id, redirect_uri=redirect_uri, scope=scope)
+        url = self.loader.vk.authorize_redirect_url(client_id=client_id, redirect_uri=redirect_uri, scope=scope)
         self.redirect(url)
