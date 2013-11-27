@@ -1,7 +1,7 @@
-from ecogame.model.objects import QuestManager, ZombieManager
-from ecogame.model.user import UserManager
 from motor import MotorDatabase
 from ecogame.vk import VKAPI
+import importlib
+from ecogame.model.model import ModelManager
 
 
 class ManagerLoader(object):
@@ -13,6 +13,7 @@ class ManagerLoader(object):
         self.settings = settings
         self._user_manager = None
         self._vk_api = None
+        self._managers = {}
         self._quest_manager = None
         self._zombie_manager = None
 
@@ -24,20 +25,21 @@ class ManagerLoader(object):
                                                 client_secret=self.settings["vk_client_secret"])
         return self._vk_api
 
-    @property
-    def user_manager(self) -> UserManager:
-        if not self._user_manager:
-            self._user_manager = UserManager(db=self.db, loader=self)
-        return self._user_manager
+    def __getattr__(self, name):
+        """Пытается загрузить менеджер по его имени, например quest_manager"""
+        return self._load_manager(name)
+
+    def _load_manager(self, name: str, module_name: str=None) -> ModelManager:
+        """Динамически создает менеджер и загружает его модуль по имени"""
+        if name not in self._managers:
+            if name[-8:] != '_manager':
+                raise ValueError('Manager name %s is invalid', name)
+            manager_name = name[:-8].capitalize() + 'Manager'
+            module = importlib.import_module(module_name or 'ecogame.model.objects')
+            manager = getattr(module, manager_name)
+            self._managers[name] = manager(db=self.db, loader=self)
+        return self._managers[name]
 
     @property
-    def quest_manager(self) -> QuestManager:
-        if not self._quest_manager:
-            self._quest_manager = QuestManager(db=self.db, loader=self)
-        return self._quest_manager
-
-    @property
-    def zombie_manager(self) -> ZombieManager:
-        if not self._zombie_manager:
-            self._zombie_manager = ZombieManager(db=self.db, loader=self)
-        return self._zombie_manager
+    def user_manager(self) -> ModelManager:
+        return self._load_manager('user_manager', 'ecogame.model.user')
