@@ -12,7 +12,13 @@ class CommonHandler(web.RequestHandler):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
         self.db = self.application.db
-        self.loader = ManagerLoader(self.settings, db=self.db)
+
+    @property
+    def loader(self):
+        """
+        :rtype: ecogame.model.ManagerLoader
+        """
+        return self.application.loader
 
     def on_finish(self):
         self.logger.info('Handler request finished in %0.3f sec.', time.time() - self.handler_started)

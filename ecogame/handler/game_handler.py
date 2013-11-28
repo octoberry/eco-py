@@ -15,3 +15,12 @@ class ZombiesHandler(AuthCommonHandler):
         """Возвращает зомби доступных пользователю"""
         zombies = yield self.user.zombies()
         self.send_json(zombies)
+
+
+class PollutionHandler(AuthCommonHandler):
+    @web.authenticated
+    @gen.coroutine
+    def get(self):
+        """Возвращает загрязнения"""
+        pollutions = yield self.loader.pollution_manager.find()
+        self.send_json(pollutions)

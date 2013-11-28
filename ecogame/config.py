@@ -17,6 +17,10 @@ define("cookie_secret", help="Cookie secret code", group='application')
 define("port", 8888, int, "Server port listen")
 define("static_url", '/static', str, "Static files url path", group='application')
 
+#POLLUTION
+define("pollution_spawn_time", 1000 * 10, int, "Pollution spawn cycle", group='application')
+define("pollution_spawn_rtg", 0.01, int, "Pollution per zombie", group='application')
+
 #LOGGING
 define('suppressed_loggers', ['tornado.curl_httpclient'], list)
 define('logformat', '[%(process)s] %(asctime)s %(levelname)s %(name)s: %(message)s', str)

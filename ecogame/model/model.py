@@ -189,6 +189,12 @@ class ModelManager(object):
             model.load_from_db(object_data)
         return model
 
+    @gen.coroutine
+    def count(self, query: dict=None) -> int:
+        """Осуществляет подсчет моделей в коллекции удовлетворяющих условию query"""
+        objects_count = yield Op(self.object_db.find(query).count)
+        return objects_count
+
 
 class ModelCordsMixin(object):
     def __init__(self, *args, **kwargs):

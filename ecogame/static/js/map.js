@@ -33,8 +33,8 @@ $( document ).ready(function() {
         var pollutions = {};
         $.getJSON("/pollutions", function( data ) {
           $.each( data, function( key, val ) {
-            pollutions[val._id] = new google.maps.Marker({
-                position: new google.maps.LatLng(val.cords.y, val.cords.x),
+            pollutions[val.id] = new google.maps.Marker({
+                position: new google.maps.LatLng(val.cords.lat, val.cords.lng),
                 map: map,
                 icon: '/static/resources/rubbish_small.png'
             });

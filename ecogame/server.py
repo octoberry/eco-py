@@ -1,6 +1,6 @@
 # coding=utf-8
 import os.path
-from bson import ObjectId
+from tornado import gen
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
@@ -9,6 +9,7 @@ import motor
 import logging
 from ecogame.handler import routing
 from ecogame import config, ui_methods
+from ecogame.model import ManagerLoader
 
 
 logging.basicConfig(level=logging.INFO)
@@ -44,6 +45,12 @@ class Application(tornado.web.Application):
 
         tornado.web.Application.__init__(self, routing, ui_methods=ui_methods, **settings)
         logging_configure()
+        self.loader = ManagerLoader(self.settings, db=self.db)
+
+    @gen.coroutine
+    def pollution_spawn(self):
+        """Инициирует генерацию загрязнений"""
+        yield self.loader.pollution_manager.spawn()
 
 
 def build_app_config(config_file=None, allow_console=True):
@@ -89,8 +96,10 @@ def main():
     app = Application()
     server_log = logging.getLogger(__name__)
     app.listen(int(options.port))
-    tornado.ioloop.IOLoop.instance().set_blocking_signal_threshold(1, None)
+    tornado.ioloop.IOLoop.instance().set_blocking_signal_threshold(2, None)
 
+    pollution_spawn = tornado.ioloop.PeriodicCallback(app.pollution_spawn, app.settings['pollution_spawn_time'])
+    pollution_spawn.start()
 
     server_log.info('Application running on port: %d' % options.port)
     tornado.ioloop.IOLoop.instance().start()
