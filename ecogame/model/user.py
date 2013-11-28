@@ -1,7 +1,6 @@
-from motor import Op
 from tornado import gen
 from ecogame.model.model import ModelManager, ModelObject, ModelList
-from ecogame.model.objects import Quest
+from ecogame.model.social_helper import fill_zombie_from_vk
 
 
 class User(ModelObject):
@@ -19,12 +18,24 @@ class User(ModelObject):
         self.balance = 2
 
     @gen.coroutine
-    def accept_quest(self, quest: Quest):
+    def accept_quest(self, quest):
         """
         Сохраняет квест в списке активных для пользователя
+
+        :param quest: Quest to accept
+        :type quest: ecogame.model.quest.Quest
         """
         yield self._update_record({'$addToSet': {"quests_ids": quest.id}})
         self.quests_ids.append(quest.id)
+
+    @gen.coroutine
+    def update_social_token(self, social: str, token: str):
+        """
+        Сохраняет токен пользователя
+        :param social: Название социальной сети, (например "vk")
+        :param token: access token социальной сети
+        """
+        yield self._update_record({'$set': {"social.%s.access_token" % social: token}})
 
     @gen.coroutine
     def quests(self) -> ModelList:
@@ -33,7 +44,7 @@ class User(ModelObject):
         return quests
 
     @gen.coroutine
-    def compete_quest(self, quest: Quest):
+    def compete_quest(self, quest):
         """
         Завершает выполнение квеста.
 
@@ -42,11 +53,13 @@ class User(ModelObject):
         Убирает из списка активных.
 
         Обновляет баланс пользователья.
+        :param quest: Quest to accept
+        :type quest: ecogame.model.quest.Quest
         """
         completed = quest.as_completed()
         self.quests_ids.remove(quest.id)
-        yield [self._update_record({'$push': {"quests_competed": completed}}),
-               self._update_record({'$set': {"quests_ids": self.quests_ids}}),
+        quest_updates = {'$push': {"quests_competed": completed}, '$set': {"quests_ids": self.quests_ids}}
+        yield [self._update_record(quest_updates),
                self.inc_balance(int(quest.price))]
         self.quests_competed.append(completed)
 
@@ -64,6 +77,34 @@ class User(ModelObject):
         zombies = yield self.loader.zombie_manager.find({'users': self.id})
         return zombies
 
+    @gen.coroutine
+    def save_social_zombies(self):
+        """Загружает зомби из друзей соц. сетей и сохраняет их в БД"""
+        access_token = self.social['vk']['access_token']
+        query_params = {'user_id': self.social['vk']['id'], 'fields': 'uid,first_name,photo_50,sex'}
+        response = yield self.loader.vk.request('friends.get', query_params, access_token)
+        if response['items']:
+            zombies_to_create = []
+            zombies_to_update = []
+            friend_social_ids = [friend['id'] for friend in response['items']]
+            existed_zombies = yield self.loader.zombie_manager.find_by_social('vk', friend_social_ids)
+            #проеряем, есть ли зомби в списке существующих, и добавляем в список на update/создание
+            for friend in response['items']:
+                #итератор, что бы прервать выполнение на первом же зомби
+                zombie_iterator = (zombie for zombie in existed_zombies if zombie.social['vk']['id'] == friend['id'])
+                zombie_exist = next(zombie_iterator, False)
+                if zombie_exist:
+                    zombies_to_update.append(zombie_exist)
+                else:
+                    zombie = self.loader.zombie_manager.new_object()
+                    zombie.users.append(self.id)
+                    fill_zombie_from_vk(zombie, friend)
+                    zombies_to_create.append(zombie)
+            if zombies_to_create:
+                yield self.loader.zombie_manager.insert_multiple(zombies_to_create)
+            if zombies_to_update:
+                yield self.loader.zombie_manager.attach_user(self, zombies_to_update)
+
 
 class UserManager(ModelManager):
     model_type = User
@@ -79,13 +120,5 @@ class UserManager(ModelManager):
     @gen.coroutine
     def register(self, user: User):
         """Регистрирует пользователя"""
-        #todo: генерить зомбаков после создания
         yield self.save(user)
-
-
-def fill_user_from_vk(user: User, vk_data: dict):
-    """Создает пользователя из данных vk.com"""
-    user.social['vk'] = vk_data
-    user.avatar = vk_data['photo_50']
-    user.photo = vk_data['photo_200_orig']
-    user.name = vk_data['first_name']
+        yield user.save_social_zombies()

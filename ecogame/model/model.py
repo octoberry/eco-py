@@ -20,6 +20,7 @@ class ModelObject(object):
         :param loader: загрузчик объектов
         :type loader: ecogame.model.ManagerLoader
         """
+        super().__init__()
         self.id = None
         self.loader = loader
 
@@ -42,6 +43,18 @@ class ModelObject(object):
         """Возвращает dict-представление модели, с разрашенными в view_fields свойствами"""
         result = {'id': str(self.id)}
         result.update({field: getattr(self, field) for field in self.view_fields})
+        return self._view_to_json(result)
+
+    def _view_to_json(self, view_data):
+        """Подготоваливает поля в view к преобразованию в json"""
+        if isinstance(view_data, dict):
+            result = {key: self._view_to_json(value) for key, value in view_data.items()}
+        elif isinstance(view_data, list):
+            result = [self._view_to_json(value) for value in view_data]
+        elif isinstance(view_data, ObjectId):
+            result = str(view_data)
+        else:
+            result = view_data
         return result
 
     @property
@@ -72,6 +85,7 @@ class ModelObject(object):
         """
         allowed_types = (dict, list, str, int, float, bool)
         result = {key: value for key, value in vars(self).items() if isinstance(value, allowed_types)}
+        #подменяем id на _id при сохранении
         if 'id' in result:
             if result['id']:
                 result['_id'] = result['id']
@@ -143,6 +157,14 @@ class ModelManager(object):
         model_data = model.as_db_dict()
         oid = yield Op(self.object_db.save, model_data)
         model.id = ObjectId(oid)
+
+    @gen.coroutine
+    def insert_multiple(self, models: list):
+        """
+        Создает набор коллекций моделей в базе.
+        """
+        models_operation = [Op(self.object_db.save, model.as_db_dict()) for model in models]
+        yield models_operation
 
     @gen.coroutine
     def find(self, query: dict=None) -> ModelList:

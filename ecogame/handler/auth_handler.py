@@ -1,6 +1,6 @@
 from tornado import gen
 from ecogame.handler.common_handler import CommonHandler
-from ecogame.model.user import fill_user_from_vk
+from ecogame.model.social_helper import fill_user_from_vk
 from ecogame.vk import VKHandlerMixin
 
 
@@ -10,7 +10,8 @@ class VKAuthHandler(CommonHandler, VKHandlerMixin):
         redirect_url = 'http://127.0.0.1:8001/auth/vkontakte'
         if self.get_argument("code", False):
             token = yield self.loader.vk.get_access_token(self.get_argument("code"), redirect_url=redirect_url)
-            users = yield self.loader.vk.get_users(access_token=token['access_token'])
+            access_token = token['access_token']
+            users = yield self.loader.vk.get_users(access_token=access_token)
             if not users:
                 self.logger.warning('Empty VK auth response')
                 self.redirect('/')
@@ -18,8 +19,12 @@ class VKAuthHandler(CommonHandler, VKHandlerMixin):
                 user = yield self.loader.user_manager.find_by_social('vk', users[0]['id'])
                 if not user:
                     user = self.loader.user_manager.new_object()
-                    fill_user_from_vk(user, users[0])
+                    social_data = users[0]
+                    social_data['access_token'] = access_token
+                    fill_user_from_vk(user, social_data)
                     yield self.loader.user_manager.register(user)
+                else:
+                    yield user.update_social_token('vk', token['access_token'])
                 self.set_secure_cookie('user', str(user.id))
                 self.redirect('/game')
         else:

@@ -47,7 +47,7 @@ $( document ).ready(function() {
                 position: new google.maps.LatLng(val.cords.lat, val.cords.lng),
                 map: map,
                 icon: '/static/resources/zombie_small.png',
-                title: val.first_name + " " + val.last_name
+                title: val.name
             });
             currentZombie.xspeed = (Math.random() - 0.5) / 5000;
             currentZombie.yspeed = (Math.random() - 0.5) / 5000;
