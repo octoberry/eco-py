@@ -3,9 +3,9 @@ import random
 
 def random_moscow_cords():
     """Случайные координаты в Москве"""
-    lng = random.randint(0, 100000)
-    lat = random.randint(0, 100000)
-    return dict(lng=(37.605+lng/1000000), lat=(55.701+lat/1000000))
+    lng = random.uniform(37.364073, 37.841978)
+    lat = random.uniform(55.569028, 55.909194)
+    return dict(lng=round(lng, 6), lat=round(lat, 6))
 
 
 def fill_zombie_from_vk(zombie, vk_data: dict):

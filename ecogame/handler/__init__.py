@@ -14,6 +14,7 @@ routing = [
     (r'/quests', QuestsHandler),
     (r'/zombies', ZombiesHandler),
     (r'/pollutions', PollutionHandler),
+    (r'/boom', BoomHandler),
     (r'/status', StatusHandler),
     (r'/auth/vkontakte', VKAuthHandler),
     (r'/', LandingPageHandler),

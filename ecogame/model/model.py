@@ -4,6 +4,13 @@ from motor import Op, MotorDatabase, MotorCollection
 from tornado import gen
 
 
+class ModelError(Exception):
+    """
+    Ошибка в обработке модели
+    """
+    pass
+
+
 class ModelObject(object):
     """Базовый класс объекта"""
 
@@ -98,6 +105,12 @@ class ModelList(list):
     def as_view(self) -> dict:
         """Возвращает список as_view представлений моделей"""
         return [obj.as_view() for obj in self]
+
+    def as_ids_view(self) -> list:
+        """
+        Возвращает список ID моделей в строковом представлении, а не ObjectID!
+        """
+        return [str(obj.id) for obj in self]
 
 
 class ModelManager(object):
@@ -205,3 +218,39 @@ class ModelCordsMixin(object):
         super().load_from_db(data)
         if 'cords' in data and data['cords']:
             self.cords = dict(lat=data['cords']['lat'], lng=data['cords']['lng'])
+
+
+class ManagerCordsMixin(ModelManager):
+    @staticmethod
+    def _cords_query(lat: float, lng: float, radius: float, query: dict=None):
+        query_cords = {"cords": {"$geoWithin": {
+            "$center": [{'lat': round(lat, 6), 'lng': round(lng, 6)}, radius]
+        }}}
+        if query:
+            query_cords.update(query)
+        return query_cords
+
+    @gen.coroutine
+    def find_in_cords(self, lat: float, lng: float, radius: float, query: dict=None) -> ModelList:
+        """
+        Осуществляет поиск объектов в указанных координатах, с заданным радиусом поиска
+
+        :param lat: latitude
+        :param lng: longitude
+        :param radius: радиус поиска
+        :param query: дополнительные параметры запроса
+        :return: Список ModelObject
+        """
+        objects = yield self.find(self._cords_query(lat=lat, lng=lng, radius=radius, query=query))
+        return objects
+
+    @gen.coroutine
+    def remove_in_cords(self, lat: float, lng: float, radius: float, query: dict=None):
+        """
+        Удаляет набор моделей в заданных координатах.
+        :param lat: latitude
+        :param lng: longitude
+        :param radius: радиус поиска
+        :param query: дополнительные параметры запроса
+        """
+        yield Op(self.object_db.remove, self._cords_query(lat=lat, lng=lng, radius=radius, query=query))

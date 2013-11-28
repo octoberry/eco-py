@@ -1,6 +1,6 @@
 from motor import Op
 from tornado import gen
-from ecogame.model.model import ModelManager, ModelObject, ModelCordsMixin
+from ecogame.model.model import ModelManager, ModelObject, ModelCordsMixin, ManagerCordsMixin
 from ecogame.model.social_helper import random_moscow_cords
 
 
@@ -16,7 +16,7 @@ class Pollution(ModelCordsMixin, ModelObject):
         super().__init__(loader)
 
 
-class PollutionManager(ModelManager):
+class PollutionManager(ManagerCordsMixin, ModelManager):
     model_type = Pollution
 
     @gen.coroutine

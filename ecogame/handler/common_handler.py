@@ -1,8 +1,8 @@
 from tornado.escape import json_encode
-from ecogame.model import ManagerLoader
 from tornado import web, gen
 import logging
 import time
+from ecogame.model.model import ModelError
 
 
 class CommonHandler(web.RequestHandler):
@@ -23,13 +23,33 @@ class CommonHandler(web.RequestHandler):
     def on_finish(self):
         self.logger.info('Handler request finished in %0.3f sec.', time.time() - self.handler_started)
 
+    def send_error_json(self, msg: str, data=None):
+        """Отправляет json с сообщением об ошибке"""
+        error_data = {'status': False, 'msg': msg}
+        if data:
+            error_data.update(data)
+        self.send_json(error_data)
+
     def send_json(self, data):
         """Отправляет dict как json. Автоматически вызывает as_view"""
+        self.set_header('Content-Type', 'application/json')
         if hasattr(data, 'as_view'):
             self.write(json_encode(data.as_view()))
         else:
             self.write(json_encode(data))
         self.finish()
+
+    def write_error(self, status_code, **kwargs):
+        overrided_error = False
+        if 'exc_info' in kwargs:
+            exception = kwargs['exc_info'][1]
+            if isinstance(exception, ModelError):
+                msg = str(ModelError)
+                self.set_status(400)
+                self.send_json({'msg': msg})
+                overrided_error = True
+        if not overrided_error:
+            super().write_error(status_code, **kwargs)
 
 
 class AuthCommonHandler(CommonHandler):

@@ -19,12 +19,9 @@ class VKAuthHandler(CommonHandler, VKHandlerMixin):
                 user = yield self.loader.user_manager.find_by_social('vk', users[0]['id'])
                 if not user:
                     user = self.loader.user_manager.new_object()
-                    social_data = users[0]
-                    social_data['access_token'] = access_token
-                    fill_user_from_vk(user, social_data)
+                    fill_user_from_vk(user, users[0])
                     yield self.loader.user_manager.register(user)
-                else:
-                    yield user.update_social_token('vk', token['access_token'])
+                yield user.logined(social='vk', token=access_token)
                 self.set_secure_cookie('user', str(user.id))
                 self.redirect('/game')
         else:

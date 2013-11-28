@@ -1,5 +1,6 @@
+import datetime
 from tornado import gen
-from ecogame.model.model import ModelManager, ModelObject, ModelList
+from ecogame.model.model import ModelManager, ModelObject, ModelList, ModelError
 from ecogame.model.social_helper import fill_zombie_from_vk
 
 
@@ -16,6 +17,26 @@ class User(ModelObject):
         self.quests_ids = []
         self.quests_competed = []
         self.balance = 2
+        self.login_at = datetime.datetime.utcnow()
+
+    @gen.coroutine
+    def boom(self, lat, lng) -> ModelList:
+        """
+        Взрывает эко-кристал в указанных координатах, и удаляет загрязнения в радиусе действия
+
+        :param lat: latitude
+        :param lng: longitude
+        :return: список загрязнений
+        """
+        if self.balance <= 0:
+            raise ModelError('Balance should be greater than 0')
+
+        radius = 0.01
+        pollutions = yield self.loader.pollution_manager.find_in_cords(lat=lat, lng=lng, radius=radius)
+        if pollutions:
+            yield self.loader.pollution_manager.remove_in_cords(lat=lat, lng=lng, radius=radius)
+        yield self.inc_balance(-1)
+        return pollutions
 
     @gen.coroutine
     def accept_quest(self, quest):
@@ -29,13 +50,14 @@ class User(ModelObject):
         self.quests_ids.append(quest.id)
 
     @gen.coroutine
-    def update_social_token(self, social: str, token: str):
+    def logined(self, social: str, token: str):
         """
-        Сохраняет токен пользователя
+        Производит действия при логине
         :param social: Название социальной сети, (например "vk")
         :param token: access token социальной сети
         """
-        yield self._update_record({'$set': {"social.%s.access_token" % social: token}})
+        update = {'$set': {"social.%s.access_token" % social: token, 'login_at': datetime.datetime.utcnow()}}
+        yield self._update_record(update)
 
     @gen.coroutine
     def quests(self) -> ModelList:
