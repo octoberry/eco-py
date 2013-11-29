@@ -16,10 +16,12 @@ class VKAuthHandler(CommonHandler, VKHandlerMixin):
                 self.logger.warning('Empty VK auth response')
                 self.redirect('/')
             else:
-                user = yield self.loader.user_manager.find_by_social('vk', users[0]['id'])
+                socail_data = users[0]
+                socail_data['access_token'] = access_token
+                user = yield self.loader.user_manager.find_by_social('vk', socail_data['id'])
                 if not user:
                     user = self.loader.user_manager.new_object()
-                    fill_user_from_vk(user, users[0])
+                    fill_user_from_vk(user, socail_data)
                     yield self.loader.user_manager.register(user)
                 yield user.logined(social='vk', token=access_token)
                 self.set_secure_cookie('user', str(user.id))

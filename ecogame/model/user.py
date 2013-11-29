@@ -3,6 +3,8 @@ from tornado import gen
 from ecogame.model.model import ModelManager, ModelObject, ModelList, ModelError
 from ecogame.model.social_helper import fill_zombie_from_vk
 
+EARTH_RADIUS = 6371
+
 
 class User(ModelObject):
     db_collection_name = 'user'
@@ -31,7 +33,7 @@ class User(ModelObject):
         if self.balance <= 0:
             raise ModelError('Balance should be greater than 0')
 
-        radius = 0.01
+        radius = round(self.loader.settings['pollution_boom_radius'] / EARTH_RADIUS, 2)
         pollutions = yield self.loader.pollution_manager.find_in_cords(lat=lat, lng=lng, radius=radius)
         if pollutions:
             yield self.loader.pollution_manager.remove_in_cords(lat=lat, lng=lng, radius=radius)

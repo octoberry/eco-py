@@ -217,14 +217,22 @@ class ModelCordsMixin(object):
     def load_from_db(self, data: dict):
         super().load_from_db(data)
         if 'cords' in data and data['cords']:
-            self.cords = dict(lat=data['cords']['lat'], lng=data['cords']['lng'])
+            self.cords = dict(lat=data['cords'][0], lng=data['cords'][1])
+
+    def as_db_dict(self) -> dict:
+        result = super().as_db_dict()
+        if self.cords:
+            result['cords'] = [self.cords['lat'], self.cords['lng']]
+        elif 'cords' in result:
+            del result['cords']
+        return result
 
 
 class ManagerCordsMixin(ModelManager):
     @staticmethod
     def _cords_query(lat: float, lng: float, radius: float, query: dict=None):
         query_cords = {"cords": {"$geoWithin": {
-            "$center": [{'lat': round(lat, 6), 'lng': round(lng, 6)}, radius]
+            "$center": [[round(lat, 6), round(lng, 6)], radius]
         }}}
         if query:
             query_cords.update(query)

@@ -20,6 +20,7 @@ define("static_url", '/static', str, "Static files url path", group='application
 #POLLUTION
 define("pollution_spawn_time", 1000 * 10, int, "Pollution spawn cycle", group='application')
 define("pollution_spawn_rtg", 0.01, int, "Pollution per zombie", group='application')
+define("pollution_boom_radius", 50, int, "Pollution boom radius (meters)", group='application')
 
 #LOGGING
 define('suppressed_loggers', ['tornado.curl_httpclient'], list)
