@@ -61,16 +61,20 @@ function initialize() {
     //drawing ecobot.
     $.getJSON("/robots", function (data) {
         $.each(data, function (key, val_robot) {
+            var isOwn = val_robot['user'] == GLOBAL.user_id;
             var ecobot = new google.maps.Marker({
                 position: new google.maps.LatLng(val_robot.cords.lat, val_robot.cords.lng),
                 map: map,
-                icon: '/static/resources/ecobot_small.png',
-                title: 'EcoRobot'
+                icon: isOwn ? '/static/resources/ecobot_small.png' : '/static/resources/ecobot_small_gray.png',
+                title: 'EcoRobot',
+                isOwn: isOwn,
+                zIndex: 3000
             });
             ecobot.xspeed = 0;//(Math.random() - 0.5) / 5000;
             ecobot.yspeed = 0;//(Math.random() - 0.5) / 5000;
             ecobot.iterations = 0;
-            ecobot.robotId = val_robot._id;
+            ecobot.robotId = val_robot.id;
+            ecobot.userId = val_robot.user;
             setInterval(function () {
                 if (ecobot.iterations > 0) {
                     ecobot.setPosition(new google.maps.LatLng(ecobot.getPosition().lat() + ecobot.xspeed, ecobot.getPosition().lng() + ecobot.yspeed));
@@ -78,16 +82,18 @@ function initialize() {
                 }
             }, 100);
 
-            google.maps.event.addListener(ecobot, 'click', function () {
-                if (!mapClickMode) {
-                    ecobot.setIcon('/static/resources/ecobot_small_selected.png');
-                    selectedEcobot = ecobot;
+            if (isOwn) {
+                google.maps.event.addListener(ecobot, 'click', function () {
+                    if (!mapClickMode) {
+                        ecobot.setIcon('/static/resources/ecobot_small_selected.png');
+                        selectedEcobot = ecobot;
 
-                    map.setOptions({draggableCursor: 'crosshair'});
+                        map.setOptions({draggableCursor: 'crosshair'});
 
-                    mapClickMode = 'robot';
-                }
-            });
+                        mapClickMode = 'robot';
+                    }
+                });
+            }
         });
     });
 
@@ -108,8 +114,8 @@ function initialize() {
                 selectedEcobot = null;
             };
             $.ajax({
-                url: '/robot/position',
-                data: {id: selectedEcobot.robotId, cords: {lat: event.latLng.lat(), lng: event.latLng.lng()}},
+                url: '/robot/' + selectedEcobot.robotId + '/move',
+                data: {lat: event.latLng.lat(), lng: event.latLng.lng()},
                 method: "post"
             }).done(updateRobotPosition);
         }

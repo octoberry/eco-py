@@ -1,12 +1,12 @@
 import datetime
 from tornado import gen
-from ecogame.model.model import ModelManager, ModelObject, ModelList, ModelError
-from ecogame.model.social_helper import fill_zombie_from_vk
+from ecogame.model.model import ModelManager, ModelObject, ModelList, ModelError, ModelCordsMixin, ManagerCordsMixin, NotFoundError
+from ecogame.model.social_helper import fill_zombie_from_vk, random_moscow_cords
 
 EARTH_RADIUS = 6371
 
 
-class User(ModelObject):
+class User(ModelCordsMixin, ModelObject):
     db_collection_name = 'user'
 
     def __init__(self, loader):
@@ -14,12 +14,14 @@ class User(ModelObject):
         self.name = None
         self.avatar = None
         self.photo = None
-        self.cords = None
         self.social = {}
         self.quests_ids = []
         self.quests_competed = []
         self.balance = 2
+        self.robots = []
         self.login_at = datetime.datetime.utcnow()
+        #кординаты по умолчанию = офис Octoberry
+        self.cords = dict(lat=55.751, lng=37.655)
 
     @gen.coroutine
     def boom(self, lat, lng) -> ModelList:
@@ -129,8 +131,38 @@ class User(ModelObject):
             if zombies_to_update:
                 yield self.loader.zombie_manager.attach_user(self, zombies_to_update)
 
+    @gen.coroutine
+    def add_robot(self) -> ModelObject:
+        """
+        Добавляет пользователю робота
 
-class UserManager(ModelManager):
+        :return: созданный робот
+        :rtype ecogame.model.robot.Robot
+        """
+        robot = self.loader.robot_manager.new_object()
+        robot.user = self.id
+        robot.cords = self.cords
+        robot.placed = True
+        yield self.loader.robot_manager.save(robot)
+        yield self._update_record({'$addToSet': {"robots": robot.id}})
+        self.robots.append(robot.id)
+        return robot
+
+    @gen.coroutine
+    def get_robot(self, robot_id: str):
+        """
+        Возвращает объект робота пользователя по его id
+
+        :return: робот
+        :rtype ecogame.model.robot.Robot
+        """
+        robot_iterator = (robot_oid for robot_oid in self.robots if str(robot_oid) == robot_id)
+        robot_oid = next(robot_iterator, False)
+        result = yield self.loader.robot_manager.get(robot_oid)
+        return result
+
+
+class UserManager(ManagerCordsMixin, ModelManager):
     model_type = User
 
     @gen.coroutine
@@ -146,3 +178,4 @@ class UserManager(ModelManager):
         """Регистрирует пользователя"""
         yield self.save(user)
         yield user.save_social_zombies()
+        yield user.add_robot()

@@ -8,9 +8,7 @@ class Zombie(ModelCordsMixin, ModelObject):
     Создаются на базе друзей пользователя из социальных сетей.
 
     Видны только пользователям, у которых находится в друзьях соц. сетей.
-    todo: change mixin inherit to right direction
     """
-
     db_collection_name = 'zombie'
 
     view_fields = ['name', 'cords']

@@ -48,6 +48,9 @@
 		title += today + "</p>";
 		document.write( title );
 
+        var GLOBAL = GLOBAL || {};
+        GLOBAL.user_id = '{{ current_user.id }}';
+
         $( document ).ready(function() {
             $.ajaxSetup({
                 beforeSend: function(xhr, settings) {

@@ -1,10 +1,18 @@
 # coding=utf-8
+import datetime
 from bson import ObjectId
 from motor import Op, MotorDatabase, MotorCollection
 from tornado import gen
 
 
 class ModelError(Exception):
+    """
+    Ошибка в обработке модели
+    """
+    pass
+
+
+class NotFoundError(Exception):
     """
     Ошибка в обработке модели
     """
@@ -30,6 +38,7 @@ class ModelObject(object):
         super().__init__()
         self.id = None
         self.loader = loader
+        self._object_manager = None
 
     def _id_selector(self) -> dict:
         """Возвращает dict - селектор текущего объекта по ID"""
@@ -45,6 +54,17 @@ class ModelObject(object):
     @property
     def db(self):
         return self.loader.db
+
+    @property
+    def object_manager(self):
+        """
+        Возвращает менеджер модели
+        :rtype ecogame.model.model.ManagerLoader
+        """
+        if not self._object_manager:
+            class_name = type(self).__name__
+            self._object_manager = getattr(self.loader, class_name.lower() + "_manager")
+        return self._object_manager
 
     def as_view(self) -> dict:
         """Возвращает dict-представление модели, с разрашенными в view_fields свойствами"""
@@ -79,18 +99,18 @@ class ModelObject(object):
         """
         self.id = data['_id']
         for field, value in data.items():
-            if field != 'cords' and hasattr(self, field):
+            if field not in ['cords', 'cords_old', 'cords_at'] and field[:1] != '_' and hasattr(self, field):
                 setattr(self, field, value)
 
     def as_db_dict(self) -> dict:
         """
         Возвращает dict для сохранения в базе данных
 
-        По умолчанию возвращает все свойства объекта типа: dict, list, str, int, float, bool
+        По умолчанию возвращает все свойства объекта типа: dict, list, str, int, float, bool, ObjectId
 
         Может быть переопреден в конкретных реализациях
         """
-        allowed_types = (dict, list, str, int, float, bool)
+        allowed_types = (dict, list, str, int, float, bool, ObjectId)
         result = {key: value for key, value in vars(self).items() if isinstance(value, allowed_types)}
         #подменяем id на _id при сохранении
         if 'id' in result:
@@ -141,18 +161,19 @@ class ModelManager(object):
 
         Дополнительными параметрами можно передать критерии поиска
         """
+        if not object_id:
+            raise NotFoundError('Запрошен пустой id объекта')
         m_id = object_id if isinstance(object_id, ObjectId) else ObjectId(object_id)
         query = {'_id': m_id}
         if kwargs:
             query.update(kwargs)
 
         object_data = yield Op(self.object_db.find_one, query)
+        if not object_data:
+            raise NotFoundError('Объект не найден по его id %s' % object_id)
 
-        model_object = None
-        if object_data:
-            model_object = self.new_object()
-            model_object.load_from_db(object_data)
-
+        model_object = self.new_object()
+        model_object.load_from_db(object_data)
         return model_object
 
     def new_object(self) -> ModelObject:
@@ -213,6 +234,9 @@ class ModelCordsMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cords = None
+        #old_cords используются когда объект перемещается
+        self.cords_old = None
+        self.cords_at = None
 
     def load_from_db(self, data: dict):
         super().load_from_db(data)
@@ -227,12 +251,25 @@ class ModelCordsMixin(object):
             del result['cords']
         return result
 
+    @gen.coroutine
+    def move(self, lat: float, lng: float):
+        if not self.cords:
+            raise ModelError('Объект должен иметь начальные координаты для перемещения')
+        cords_at = datetime.datetime.utcnow()
+        update_data = {'$set': {
+            'cords': [lat, lng],
+            'cords_old': [self.cords['lat'], self.cords['lng']],
+            'cords_at': cords_at
+        }}
+        yield self._update_record(update_data)
+        self.cords_old, self.cords, self.cords_at = self.cords, dict(lat=lat, lng=lng), cords_at
+
 
 class ManagerCordsMixin(ModelManager):
     @staticmethod
     def _cords_query(lat: float, lng: float, radius: float, query: dict=None):
         query_cords = {"cords": {"$geoWithin": {
-            "$center": [[round(lat, 6), round(lng, 6)], radius]
+            "$center": [[lat, lng], radius]
         }}}
         if query:
             query_cords.update(query)

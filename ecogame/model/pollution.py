@@ -29,7 +29,7 @@ class PollutionManager(ManagerCordsMixin, ModelManager):
         pollutions_count = round(zombies_count*self.loader.settings['pollution_spawn_rtg'])
         pollutions_to_create = []
         for i in range(0, pollutions_count):
-            pollution = self.loader.pollution_manager.new_object()
+            pollution = self.new_object()
             pollution.cords = random_moscow_cords()
             pollutions_to_create.append(pollution)
         if pollutions_to_create:
