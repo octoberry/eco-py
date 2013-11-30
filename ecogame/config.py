@@ -14,7 +14,7 @@ define("mongo_timeout_socket", 500, int, "MongoDB socket timeout", group='mongo'
 define("config", type=str, help="path to config file")
 define("debug", default=False, help="Debug mode", group='application')
 define("cookie_secret", help="Cookie secret code", group='application')
-define("port", 8888, int, "Server port listen")
+define("port", 8001, int, "Server port listen")
 define("static_url", '/static', str, "Static files url path", group='application')
 
 #POLLUTION
