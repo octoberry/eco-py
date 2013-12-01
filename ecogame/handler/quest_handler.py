@@ -7,7 +7,7 @@ class QuestsHandler(AuthCommonHandler):
     @web.authenticated
     @gen.coroutine
     def get(self):
-        quests = yield self.loader.quest_manager.find()
+        quests = yield self.loader.quest_manager.find_for_user(self.user)
         self.send_json(quests)
 
 

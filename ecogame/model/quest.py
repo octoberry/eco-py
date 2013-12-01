@@ -1,7 +1,7 @@
 import datetime
 from motor import Op
 from tornado import gen
-from ecogame.model.model import ModelManager, ModelObject
+from ecogame.model.model import ModelManager, ModelObject, ModelList
 
 QuestTypes = {
     1: "Вторая жизнь вещей",
@@ -28,6 +28,8 @@ class Quest(ModelObject):
         self.short_desc = ''
         self.desc = ''
         self.price = 1
+        #меняется только при выводе доступных пользователю квестов
+        self.accepted = False
 
     def as_completed(self) -> dict:
         """
@@ -44,3 +46,19 @@ class Quest(ModelObject):
 
 class QuestManager(ModelManager):
     model_type = Quest
+
+    @gen.coroutine
+    def find_for_user(self, user) -> ModelList:
+        """
+        Выводит список квестов доступных пользователю
+
+        :param user: Пользователь
+        :type user:
+        :return: список квестов
+        """
+        result = ModelList()
+        quests = yield self.find()
+        for quest in quests:
+            if quest.id not in user.quests_ids:
+                result.append(quest)
+        return result
