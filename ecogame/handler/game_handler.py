@@ -1,7 +1,8 @@
 from functools import wraps
 from tornado import web, gen
+from tornado.escape import json_decode
 from tornado.web import HTTPError
-from ecogame.handler.common_handler import AuthCommonHandler
+from ecogame.handler.common_handler import AuthCommonHandler, SocketHandler
 
 
 def require_cords(method):
@@ -42,43 +43,35 @@ class ZombiesHandler(AuthCommonHandler):
         self.send_json(zombies)
 
 
-class PollutionHandler(AuthCommonHandler):
-    @web.authenticated
+class GameHandler(SocketHandler):
     @gen.coroutine
-    def get(self):
-        """Возвращает загрязнения"""
-        pollutions = yield self.loader.pollution_manager.find()
-        self.send_json(pollutions)
+    def open(self):
+        yield super().open()
+        self.send_json('users.me', self.user)
 
-
-class RobotHandler(AuthCommonHandler):
-    @web.authenticated
     @gen.coroutine
-    def get(self):
-        """Возвращает загрязнения"""
-        robots = yield self.loader.robot_manager.find_visible()
-        self.send_json(robots)
+    def on_message(self, message):
+        message = json_decode(message)
+        if 'type' in message:
+            data = message['data'] if 'data' in message else None
+            if message['type'] == 'robots.find':
+                robots = yield self.loader.robot_manager.find_visible()
+                self.send_json('robots', robots)
+            elif message['type'] == 'robots.move':
+                robot = yield self.user.get_robot(data['id'])
+                yield robot.move(lat=data['cords']['lat'], lng=data['cords']['lng'])
+                self.send_json_all('robots.move', robot)
+            elif message['type'] == 'pollution.find':
+                pollutions = yield self.loader.pollution_manager.find()
+                self.send_json('pollutions', pollutions)
+            elif message['type'] == 'boom.boom':
+                yield self.boom_boom(data=data)
 
-
-class RobotMoveHandler(AuthCommonHandler):
-    @web.authenticated
     @gen.coroutine
-    @require_cords
-    def post(self, robot_id, lat, lng, *args, **kwargs):
-        """Перемещает робота на указанные координаты"""
-        robot = yield self.user.get_robot(robot_id)
-        robot.move(lat, lng)
-        self.send_json({'result': True})
-
-
-class BoomHandler(AuthCommonHandler):
-    @web.authenticated
-    @gen.coroutine
-    @require_cords
-    def post(self, lat, lng, *args, **kwargs):
-        """Удаляет загрязнений в указанных координатах"""
+    def boom_boom(self, data):
         if self.user.balance <= 0:
-            self.send_error_json('Недостаточно кристалов. Приглашайте друзей и выполняйте задания!', {'balance': 0})
+            self.send_notice_json(msg='Недостаточно кристалов. Приглашайте друзей и выполняйте задания!')
         else:
-            removed_ids = yield self.user.boom(lat, lng)
-            self.send_json({'balance': self.user.balance, 'items': removed_ids.as_ids_view()})
+            pollutions = yield self.user.boom(data['cords']['lat'], data['cords']['lng'])
+            self.send_json('boom', {'balance': self.user.balance, 'count': len(pollutions)})
+            self.send_json_all('pollution.remove', {'balance': self.user.balance, 'items': pollutions.as_ids_view()})

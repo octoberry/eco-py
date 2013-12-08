@@ -1,0 +1,71 @@
+<div class="modal-dialog" ng-controller="QuestsCtrl">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="$close()">&times;</button>
+      <h4 class="modal-title" id="myModalLabel">Задания</h4>
+    </div>
+    <div class="modal-body">
+      <tabset>
+        <tab heading="Доступные задания" ng-click="reloadQuest()">
+          <h2 ng-show="!quests.length">Нет активных заданий</h2>
+          <div class="panel panel-primary" ng-repeat="quest in quests">
+            <div class="panel-heading">{{quest.title}}</div>
+            <div class="panel-body">
+              <h4>{{quest.short_desc}}</h4>
+              <p class="lead" ng-show="showDetails">{{quest.desc}}</p>
+            </div>
+            <div class="panel-footer">
+              <div class="pull-left" >
+                <h5><span class="glyphicon glyphicon-euro"></span> Награда: {{quest.price}} кристалов</h5>
+              </div>
+              <div class="btn-group pull-right">
+                <button type="button" ng-click="showDetails = !showDetails" class="btn btn-default" ng-switch="showDetails">
+                  <span class="glyphicon glyphicon-list"></span>
+                  <span ng-switch-when="true">Спрятать условия</span>
+                  <span ng-switch-default>Прочитать условия</span>
+                </button>
+                <button type="button" ng-click="acceptQuest(quest)" class="btn btn-primary">
+                  <span class="glyphicon glyphicon-paperclip"></span>
+                  Принять вызов
+                </button>
+              </div>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+        </tab>
+        <tab heading="Активные задания" ng-click="reloadMyQuest()">
+          <h2 ng-show="!myQuests.length">Нет активных заданий</h2>
+          <div class="panel panel-primary" ng-repeat="quest in myQuests">
+            <div class="panel-heading">{{quest.title}}</div>
+            <div class="panel-body">
+              <h4>{{quest.short_desc}}</h4>
+              <p class="lead" ng-show="showDetails">{{quest.desc}}</p>
+            </div>
+            <div class="panel-footer">
+              <div class="pull-left" >
+                <h5><span class="glyphicon glyphicon-euro"></span> Награда: {{quest.price}} кристалов</h5>
+              </div>
+              <div class="btn-group pull-right">
+                <button type="button" ng-click="showDetails = !showDetails" class="btn btn-default" ng-switch="showDetails">
+                  <span class="glyphicon glyphicon-list"></span>
+                  <span ng-switch-when="true">Спрятать условия</span>
+                  <span ng-switch-default>Прочитать условия</span>
+                </button>
+                <button type="button" ng-click="completeQuest(quest)" class="btn btn-success">
+                  <span class="glyphicon glyphicon-paperclip"></span>
+                  Отправить файл
+                </button>
+              </div>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+
+        </tab>
+      </tabset>
+    </div>
+    <!--<div class="modal-footer">-->
+      <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+      <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+    <!--</div>-->
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

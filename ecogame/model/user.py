@@ -9,6 +9,8 @@ EARTH_RADIUS = 6371
 class User(ModelCordsMixin, ModelObject):
     db_collection_name = 'user'
 
+    view_fields = ['balance', 'avatar', 'photo', 'name']
+
     def __init__(self, loader):
         super().__init__(loader)
         self.name = None

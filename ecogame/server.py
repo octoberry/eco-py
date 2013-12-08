@@ -7,7 +7,7 @@ import tornado.ioloop
 from tornado.options import parse_config_file, options, parse_command_line
 import motor
 import logging
-from ecogame.handler import routing
+from ecogame.handler import routing, SocketHandler
 from ecogame import config, ui_methods
 from ecogame.model import ManagerLoader
 
@@ -50,7 +50,9 @@ class Application(tornado.web.Application):
     @gen.coroutine
     def pollution_spawn(self):
         """Инициирует генерацию загрязнений"""
-        yield self.loader.pollution_manager.spawn()
+        spawns = yield self.loader.pollution_manager.spawn()
+        if spawns:
+            SocketHandler.send_json_all('pollutions', spawns)
 
 
 def build_app_config(config_file=None, allow_console=True):

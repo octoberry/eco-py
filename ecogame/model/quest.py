@@ -28,8 +28,6 @@ class Quest(ModelObject):
         self.short_desc = ''
         self.desc = ''
         self.price = 1
-        #меняется только при выводе доступных пользователю квестов
-        self.accepted = False
 
     def as_completed(self) -> dict:
         """

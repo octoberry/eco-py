@@ -155,6 +155,20 @@ class ModelManager(object):
         return getattr(self.db, self.model_type.db_collection_name)
 
     @gen.coroutine
+    def gets(self, object_ids: list, **kwargs) -> ModelList:
+        """
+
+        :param object_ids: List of ObjectId
+        :param kwargs: additional query
+        :return: list of objects
+        """
+        query = {'_id': {'$in': object_ids}}
+        if kwargs:
+            query.update(kwargs)
+        result = yield self.find(query)
+        return result
+
+    @gen.coroutine
     def get(self, object_id: ObjectId, **kwargs) -> ModelObject:
         """
         Возвращает объект по его id
@@ -196,9 +210,12 @@ class ModelManager(object):
     def insert_multiple(self, models: list):
         """
         Создает набор коллекций моделей в базе.
+        :return list of ObjectId
+        :rtype list[ObjectId]
         """
         models_operation = [Op(self.object_db.save, model.as_db_dict()) for model in models]
-        yield models_operation
+        results = yield models_operation
+        return results
 
     @gen.coroutine
     def find(self, query: dict=None) -> ModelList:

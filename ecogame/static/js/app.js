@@ -4,15 +4,17 @@
 angular.module('ecoGame', [
   'ngRoute',
   'ngResource',
+  'ui.bootstrap',
 //  'ngSanitize',
   'ecoGame.filters',
   'ecoGame.services',
   'ecoGame.directives',
-  'ecoGame.controllers'
+  'ecoGame.controllers',
+  'ecoGame.Pollution',
+  'ecoGame.Robot',
+  'ecoGame.Boom'
 ]).config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
   $routeProvider.when('/map', {templateUrl: 'static/partials/map.html', controller: 'MapsCtrl'});
-  $routeProvider.when('/quests', {templateUrl: 'static/partials/quests.html', controller: 'QuestsCtrl'});
-  $routeProvider.when('/my/quests', {templateUrl: 'static/partials/quests_my.html', controller: 'MyQuestsCtrl'});
   $routeProvider.otherwise({redirectTo: '/map'});
 
   $httpProvider.defaults.xsrfCookieName = '_xsrf';

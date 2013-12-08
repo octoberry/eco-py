@@ -1,4 +1,16 @@
 <div class="col-md-8">
-    <leaflet defaults="defaults" center="center" zoom="zoom" style="height: 420px; width:100%;"></leaflet>
+    <leaflet pollution-map defaults="defaults" center="center" zoom="zoom" style="height: 420px; width:100%;"></leaflet>
 </div>
-<div class="col-md-4">Game Controls</div>
+
+<div class="col-md-4">
+  <div class="panel panel-default" ng-show="user.loaded">
+    <div class="panel-heading">Управление</div>
+    <div class="panel-body">
+      <ul class="list-group">
+        <li class="list-group-item">Имя: {{ user.name }}</li>
+        <li class="list-group-item">Кристалов <span class="badge">{{ user.balance }}</span></li>
+      </ul>
+      <button ng-click="boomSelect()" type="button" ng-show="user.balance" class="btn btn-success">Бомбануть кристал</button>
+    </div>
+  </div>
+</div>
